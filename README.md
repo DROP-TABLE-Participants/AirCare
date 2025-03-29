@@ -1,3 +1,9 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/595d6203-b657-43b8-8cd2-f3a4f85669c9">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/f5fd8ada-5086-495b-b701-be34291ce5fb">
+  <img alt="Shows a black logo in light color mode and a white one in dark color mode." src="https://github.com/user-attachments/assets/f5fd8ada-5086-495b-b701-be34291ce5fb">
+</picture>
+
 <h1 align="center">Team Drop Table Participants</h1>
 
 <p align = "center">
