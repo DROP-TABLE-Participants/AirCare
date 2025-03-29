@@ -7,7 +7,7 @@
 </p>
 
 ## 💻 About
-<h2 align="center">AirCare - Knowledge is power, we give you both</h2>
+<h2 align="center">AirCare - Where data saves lives</h2>
 
 ## 🗂️ Tech Stack:
 <p align="left">
