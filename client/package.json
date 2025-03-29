@@ -12,9 +12,11 @@
     "@heroicons/react": "^2.2.0",
     "@heroui/react": "^2.7.5",
     "framer-motion": "^12.6.2",
+    "mapbox-gl": "^3.10.0",
     "next": "15.2.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-map-gl": "^8.0.2",
     "recharts": "^2.15.1"
   },
   "devDependencies": {

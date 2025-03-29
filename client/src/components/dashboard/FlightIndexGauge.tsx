@@ -17,25 +17,23 @@ const gaugeData = [
 
 export default function FlightIndexGauge() {
   return (
-    <div className="bg-white rounded-md shadow-md p-6 max-w-sm w-full">
+    <div className="p-6 w-full h-full border-[0.854px] border-[solid] border-[#C3CBDC]">
       {/* Title */}
       <div className="text-gray-700 mb-2">
         <span className="font-semibold text-sm">Flight Index</span>
       </div>
 
       {/* Gauge Container */}
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center w-full h-full relative">
         {/* Adjust width/height so the half circle fits nicely */}
-        <PieChart width={220} height={140}>
+        <PieChart width={300} height={300}>
           <Pie
             data={gaugeData}
             dataKey="value"
-            cx="50%"
-            cy="100%"      // Position the circle so that only the top half is visible
             startAngle={180}
             endAngle={0}
-            innerRadius={60}
-            outerRadius={80}
+            innerRadius={70}
+            outerRadius={90}
             stroke="none"
             cornerRadius={10}
             paddingAngle={4}

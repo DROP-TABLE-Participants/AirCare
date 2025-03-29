@@ -24,7 +24,7 @@ const data = [
 
 export default function FuelStats() {
   return (
-    <div className="bg-white rounded-md shadow-md p-6 max-w-xl w-full">
+    <div className="p-6 w-full border-[0.854px] border-[solid] border-[#C3CBDC]">
       {/* Title */}
       <div className="flex items-center space-x-2 text-gray-700 mb-4">
         <FireIcon className="w-5 h-5 text-red-500" />
