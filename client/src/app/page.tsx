@@ -7,13 +7,13 @@ import FuelStats from '../components/dashboard/FuelStats';
 import PartsRiskList from '../components/dashboard/PartsRiskList';
 import PlaneSchematic from '../components/dashboard/PlaneSchematic';
 import WeatherHeatmap from '../components/dashboard/WeatherHeatmap';
+import FlightIndexGauge from '@/components/dashboard/FlightIndexGauge';
 
 export default function DashboardPage() {
   // Example data – in a real app, you might fetch this from an API
   const hoursFlown = 3500;
   const cycles = 1200;
-  const fuelConsumption = 4500;
-  const carbonFootprint = 90;
+
 
   return (
     <div className="max-w-6xl mx-auto p-4">
@@ -51,14 +51,15 @@ export default function DashboardPage() {
       {/* ROW 3: Fuel Stats + Parts Risk List */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 bg-white rounded shadow p-4">
-          <FuelStats
-            fuelConsumption={fuelConsumption}
-            carbonFootprint={carbonFootprint}
-          />
+        <FuelStats />
         </div>
 
         <div className="flex-1 bg-white rounded shadow p-4">
           <PartsRiskList />
+        </div>
+
+        <div className="flex-1 bg-white rounded shadow p-4">
+          <FlightIndexGauge />
         </div>
       </div>
     </div>
