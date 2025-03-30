@@ -93,6 +93,80 @@ export default function DashboardPage() {
     setSelectedPlaneId(planeId);
     setIsPlaneDropdownOpen(false);
   };
+  
+  // Handle the export functionality
+  const handleExport = () => {
+    // Get current date for calculations
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth(); // 0-11 (January-December)
+    const currentYear = currentDate.getFullYear();
+    
+    // Get current month name
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const currentMonthName = monthNames[currentMonth];
+    
+    // Create CSV content with headers
+    let csvContent = "Aircraft,Current Engine Health (%),Months Until Maintenance Required,Maintenance Date,Notes\n";
+    
+    // For each airplane, calculate engine maintenance projection
+    airplanes.forEach(airplane => {
+      // Find the most recent engine health data
+      let currentEngineHealth = 0;
+      const lastHealthEntry = airplane.engineHealth[airplane.engineHealth.length - 1];
+      
+      // Get the current health or the last recorded health
+      const engineHealthForCurrentMonth = airplane.engineHealth.find(entry => entry.name === currentMonthName);
+      currentEngineHealth = engineHealthForCurrentMonth ? engineHealthForCurrentMonth.value : lastHealthEntry.value;
+      
+      // Calculate months until maintenance (when engine health reaches 40%)
+      let monthsUntilMaintenance = 0;
+      let projectedHealth = currentEngineHealth;
+      
+      while (projectedHealth > 40) {
+        projectedHealth -= 4; // 4% reduction per month
+        monthsUntilMaintenance++;
+      }
+      
+      // Calculate maintenance date
+      const maintenanceDate = new Date(currentYear, currentMonth + monthsUntilMaintenance, 1);
+      const formattedDate = `${maintenanceDate.getDate().toString().padStart(2, '0')}-${(maintenanceDate.getMonth() + 1).toString().padStart(2, '0')}-${maintenanceDate.getFullYear()}`;
+      
+      // Generate notes based on urgency
+      let notes = "";
+      if (monthsUntilMaintenance <= 2) {
+        notes = "URGENT - Schedule maintenance immediately";
+      } else if (monthsUntilMaintenance <= 5) {
+        notes = "Plan maintenance soon";
+      } else {
+        notes = "Routine maintenance schedule";
+      }
+      
+      // Add row to CSV
+      csvContent += [
+        airplane.name,
+        currentEngineHealth.toFixed(1),
+        monthsUntilMaintenance,
+        formattedDate,
+        notes
+      ].map(value => {
+        // Wrap fields containing commas with quotes
+        const stringValue = String(value);
+        return stringValue.includes(',') ? `"${stringValue}"` : stringValue;
+      }).join(',');
+      csvContent += '\n';
+    });
+    
+    // Create a blob and download it
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `aircraft-maintenance-forecast-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="w-full sm:max-h-screen md:h-screen flex flex-col md:flex-row overflow-scroll bg-[linear-gradient(180deg,_#F4F5F7_0%,_#E6E8F8_100%)]">
@@ -150,8 +224,22 @@ export default function DashboardPage() {
       {/* Main View */}
       <div className="main-view h-full w-full overflow-auto flex flex-col bg-none">
         {/* Navbar */}
-        <div className="navbar w-full p-5 flex flex-row justify-center md:justify-start bg-none border-b-[0.85px] border-[#C3CBDC]">
-          <img src="/logo.svg" alt="Logo" className="h-8 w-28 mr-2" />
+        <div className="navbar w-full p-5 flex flex-row justify-between items-center bg-none border-b-[0.85px] border-[#C3CBDC]">
+          {/* Logo on the left */}
+          <div className="flex items-center">
+            <img src="/logo.svg" alt="Logo" className="h-8 w-28 mr-2" />
+          </div>
+          
+          {/* Export button on the right - always visible */}
+          <button 
+            onClick={handleExport}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium text-sm flex items-center transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Export
+          </button>
         </div>
 
         {/* Top Section */}
