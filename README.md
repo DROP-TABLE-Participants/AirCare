@@ -1,7 +1,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/595d6203-b657-43b8-8cd2-f3a4f85669c9">
   <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/f5fd8ada-5086-495b-b701-be34291ce5fb">
-  <img alt="Shows a black logo in light color mode and a white one in dark color mode." src="https://github.com/user-attachments/assets/f5fd8ada-5086-495b-b701-be34291ce5fb">
+  <img alt="Shows a black logo in light color mode and a white one in dark color mode." src="https://cdn.shopify.com/s/files/1/0827/8491/1693/files/ChatGPT_Image_29.03.2025_._19_26_57.png?v=1743324906">
 </picture>
 
 <h1 align="center">Team Drop Table Participants</h1>
