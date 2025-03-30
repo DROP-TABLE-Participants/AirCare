@@ -50,7 +50,7 @@ jobs:
 
       - name: Update Deployment Repo with New Image Tag
         env:
-          DEPLOYMENT_REPO: "Dressr-org/Dressr.Deployment"
+          DEPLOYMENT_REPO: "DROP-TABLE-Participants/AirCare.Deployment"
         run: |
           git clone https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ env.DEPLOYMENT_REPO }} deploy-repo
           cd deploy-repo
