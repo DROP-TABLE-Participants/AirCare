@@ -89,13 +89,42 @@ export default function DashboardPage() {
   return (
     <div className="w-full h-screen flex flex-row bg-[linear-gradient(180deg,_#F4F5F7_0%,_#E6E8F8_100%)]">
       {/* Sidebar */}
-      <div className="sidebar h-full w-20 border-r-[0.85px] border-[#C3CBDC] bg-none" />
+      <div className="sidebar h-full w-20 border-r-[0.85px] border-[#C3CBDC] bg-none">
+        {/* Dashboard Icon */}
+        <div className="flex justify-center items-center h-20 w-full cursor-pointer hover:bg-[rgba(255,_255,_255,_0.5)] transition-colors">
+          <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+          </svg>
+        </div>
+        
+        {/* Analytics Icon */}
+        <div className="flex justify-center items-center h-20 w-full cursor-pointer hover:bg-[rgba(255,_255,_255,_0.5)] transition-colors">
+          <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
+        
+        {/* Fleet Icon */}
+        <div className="flex justify-center items-center h-20 w-full cursor-pointer hover:bg-[rgba(255,_255,_255,_0.5)] transition-colors">
+          <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          </svg>
+        </div>
+        
+        {/* Settings Icon */}
+        <div className="flex justify-center items-center h-20 w-full cursor-pointer hover:bg-[rgba(255,_255,_255,_0.5)] transition-colors">
+          <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </div>
+      </div>
 
       {/* Main View */}
       <div className="main-view h-full w-full flex flex-col bg-none">
         {/* Navbar */}
         <div className="navbar w-full p-5 flex flex-row bg-none border-b-[0.85px] border-[#C3CBDC]">
-          <h1 className="text-black">Hello</h1>
+          <img src="/logo.svg" alt="Logo" className="h-8 w-28 mr-2" />
         </div>
 
         {/* Top Section */}
@@ -256,7 +285,7 @@ export default function DashboardPage() {
                 <div className="flex-grow flex flex-col items-center justify-center text-gray-500">
                   <div className="text-center p-8">
                     <svg className="mx-auto h-16 w-16 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h2.5M15 11h4.5a2 2 0 012 2v1a2 2 0 01-2 2h-4.5M6.5 17.7L4 19.5h16l-2.5-1.8M12 14v3"></path>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.055 11H5a2 2 0 002 2v1a2 2 0 002 2h2.5M15 11h4.5a2 2 0 012 2v1a2 2 0 01-2 2h-4.5M6.5 17.7L4 19.5h16l-2.5-1.8M12 14v3"></path>
                     </svg>
                     <h3 className="mt-4 text-lg font-medium">No Flight Selected</h3>
                     {selectedPlane ? (
