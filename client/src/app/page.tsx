@@ -34,6 +34,8 @@ export default function DashboardPage() {
 
   const [isSensorDataModalOpen, setIsSensorDataModalOpen] = useState(false);
 
+  const [isDataLoadin, setIsDataLoading] = useState(true);
+
   const [sensorData, setSensorData] = useState<SensorData>({
     oilPressure: 375, 
     oilTemperature: 95, 
@@ -140,6 +142,8 @@ export default function DashboardPage() {
 
       setFailurePrediction(response);
 
+      setIsDataLoading(false);
+
     }).catch(error => {
       console.error("Error fetching failure prediction:", error);
     });
@@ -196,9 +200,9 @@ export default function DashboardPage() {
     airplanes.forEach(airplane => {
 
       let currentEngineHealth = 0;
-      const lastHealthEntry = airplane.engineHealth[airplane.engineHealth.length - 1];
+      const lastHealthEntry = airplane.engineHealth[airplane.engineHealth.length - 1] as { name: string; value: number };
 
-      const engineHealthForCurrentMonth = airplane.engineHealth.find(entry => entry.name === currentMonthName);
+      const engineHealthForCurrentMonth = (airplane.engineHealth as { name: string; value: number }[]).find((entry) => entry.name === currentMonthName);
       currentEngineHealth = engineHealthForCurrentMonth ? engineHealthForCurrentMonth.value : lastHealthEntry.value;
 
       let monthsUntilMaintenance = 0;
@@ -323,7 +327,7 @@ export default function DashboardPage() {
         {}
         <div className="top-section max-h-none md:max-h-[35%] w-full flex flex-col md:flex-row bg-none overflow-x-auto">
           {isFullyConfigured ? (
-            isAnalyticsLoading ? (
+            isAnalyticsLoading || isDataLoadin ? (
               <>
                 <SkeletonLoader />
                 <SkeletonLoader />
@@ -410,8 +414,8 @@ export default function DashboardPage() {
                         ? faultyParts.length > 0 
                           ? faultyParts 
                           : selectedPlane.partsHealth
-                              .filter((p) => p.faulty)
-                              .map((p) => p.name)
+                              .filter((p: {faulty: string, name: string}) => p.faulty)
+                              .map((p: {faulty: string, name: string}) => p.name)
                         : [] 
                     }
                   />

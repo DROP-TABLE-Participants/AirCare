@@ -48,7 +48,9 @@ export default function FuelStats({ airplane, rulForecastData }: FuelStatsProps)
 
   const [activeTab, setActiveTab] = useState<"fuel" | "engine">("fuel");
 
-  if (!airplane && !rulForecastData?.length) {
+  console.log("Airplane Stats: ", rulForecastData);
+
+  if (!airplane && !rulForecastData?.length && rulForecastData?.length == 0) {
     return (
       <div className="p-6 w-full border-[0.854px] border-solid border-[#C3CBDC]">
         <div className="flex items-center justify-center h-40 w-full text-gray-500">
@@ -65,19 +67,29 @@ export default function FuelStats({ airplane, rulForecastData }: FuelStatsProps)
 
   if (rulForecastData && rulForecastData.length > 0) {
 
-    currentEngineHealth = Math.round(rulForecastData[0].engineHealthPercentage * 100);
+    const closestToToday = rulForecastData.reduce((prev, curr) => {
+      const prevDate = new Date(prev.date);
+      const currDate = new Date(curr.date);
+
+      return Math.abs(prevDate.getTime() - Date.now()) < Math.abs(currDate.getTime() - Date.now())
+        ? prev
+        : curr;
+    }
+    );
+
+    currentEngineHealth = closestToToday.engineHealthPercentage;
 
     currentFuelEfficiency = Math.max(0, currentEngineHealth - 17);
 
     engineHealthData = rulForecastData.map((forecast) => ({
       name: formatDate(forecast.date),
-      value: Math.round(forecast.engineHealthPercentage * 100)
-    })).reverse(); 
+      value: forecast.engineHealthPercentage
+    })); 
 
     fuelEfficiencyData = rulForecastData.map((forecast) => ({
       name: formatDate(forecast.date),
-      value: Math.max(0, Math.round(forecast.engineHealthPercentage * 100) - 17)
-    })).reverse(); 
+      value: Math.max(0, forecast.engineHealthPercentage  - 17)
+    })); 
   }
 
   const data = activeTab === "fuel" ? fuelEfficiencyData : engineHealthData;
@@ -157,7 +169,7 @@ export default function FuelStats({ airplane, rulForecastData }: FuelStatsProps)
 function formatDate(isoString: string): string {
   try {
     const date = new Date(isoString);
-    return date.toLocaleString('default', { month: 'short', day: 'numeric' });
+    return date.toLocaleString('default', { month: 'short', day: 'numeric', year: '2-digit' });
   } catch {
     return "Unknown";
   }
