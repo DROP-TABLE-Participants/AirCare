@@ -38,8 +38,8 @@ const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
             dataKey="value"
             startAngle={180}
             endAngle={0}
-            innerRadius={innerRadius}
-            outerRadius={170}
+            innerRadius={70}
+            outerRadius={90}
             stroke="none"
             cornerRadius={10}
             paddingAngle={4}
@@ -49,22 +49,9 @@ const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
               value={flightIndex.toString()}
               position="center"
               fill="#000"
-              style={{ fontSize: "50px"}}
+              style={{ fontSize: "28px", fontWeight: "bold" }}
             />
           </Pie>
-          
-          <svg>
-            {dotPositions.map((dot, index) => (
-              <circle
-                key={index}
-                cx={dot.x}
-                cy={dot.y}
-                r={1.3}
-                fill="#7A7A7A"
-                opacity={0.8}
-              />
-            ))}
-          </svg>
         </PieChart>
       </div>
     </div>
