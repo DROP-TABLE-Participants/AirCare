@@ -1,6 +1,6 @@
 "use client";  // Ensure this is a client-side component
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Map from 'react-map-gl/mapbox';  // Import ReactMapGL from react-map-gl
 import 'mapbox-gl/dist/mapbox-gl.css';  // Import Mapbox CSS for styling
 import { Marker, Source, Layer } from 'react-map-gl/mapbox';  // Import Marker, Source, and Layer
@@ -8,11 +8,19 @@ import { Marker, Source, Layer } from 'react-map-gl/mapbox';  // Import Marker, 
 // Your Mapbox access token here
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiYm5zYXZvdiIsImEiOiJjbTh1OXpoMmkwbDAxMmtwZXd3NmJudnJ3In0.fgJhJlS6iYaQmdWvoOhYiw';
 
-const MapWidget = () => {
-  // Start and end points (coordinates as [longitude, latitude])
-  const start: [number, number] = [23.3219, 42.6977];  // Sofia, Bulgaria (Start)
-  const end: [number, number] = [13.4050, 52.5200];    // London (End)
+interface MapWidgetProps {
+  start?: [number, number];
+  end?: [number, number];
+  startName?: string;
+  endName?: string;
+}
 
+const MapWidget: React.FC<MapWidgetProps> = ({ 
+  start = [23.3219, 42.6977],  // Default: Sofia, Bulgaria (Start)
+  end = [13.4050, 52.5200],    // Default: Berlin, Germany (End)
+  startName = "Start",
+  endName = "End" 
+}) => {
   const calculateZoomLevel = (start: [number, number], end: [number, number]) => {
     const latDiff = Math.abs(start[1] - end[1]);
     const lngDiff = Math.abs(start[0] - end[0]);
@@ -28,6 +36,15 @@ const MapWidget = () => {
     latitude: (start[1] + end[1]) / 2,
     zoom: calculateZoomLevel(start, end),
   });
+
+  // Update viewport when start or end points change
+  useEffect(() => {
+    setViewport({
+      longitude: (start[0] + end[0]) / 2,
+      latitude: (start[1] + end[1]) / 2,
+      zoom: calculateZoomLevel(start, end),
+    });
+  }, [start, end]);
 
   // GeoJSON for the flight path (LineString)
   const geojson = {
@@ -52,12 +69,12 @@ const MapWidget = () => {
     >
       {/* Marker for Start */}
       <Marker longitude={start[0]} latitude={start[1]}>
-        <div className="text-xl text-red-600">🛫</div>
+        <div className="text-xl text-red-600" title={startName}>🛫</div>
       </Marker>
 
       {/* Marker for End */}
       <Marker longitude={end[0]} latitude={end[1]}>
-        <div className="text-xl text-green-600">🛬</div>
+        <div className="text-xl text-green-600" title={endName}>🛬</div>
       </Marker>
 
       {/* Flight Path */}
