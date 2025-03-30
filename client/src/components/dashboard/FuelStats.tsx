@@ -91,7 +91,7 @@ export default function FuelStats({ airplane }: FuelStatsProps) {
       </div>
 
       {/* Content: Big number + chart */}
-      <div className="flex flex-col sm:flex-row items-center sm:items-start">
+      <div className="flex flex-col sm:flex-row items-center sm:items-start mt-8">
         {/* Left side: Big number & subtitle */}
         <div className="mb-4 sm:mb-0 sm:mr-8">
           <h2 className="text-5xl font-bold leading-tight">{bigValue}%</h2>
