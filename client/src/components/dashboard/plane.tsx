@@ -65,6 +65,14 @@ interface PlaneProps {
   parts?: PlanePart[];
 }
 
+// Define scaling factor for mobile screens
+const getResponsiveScale = (): number => {
+  if (typeof window !== 'undefined') {
+    return window.innerWidth < 640 ? 0.7 : 1;
+  }
+  return 1;
+};
+
 const defaultParts: PlanePart[] = [
   {
     name: "front",
@@ -93,7 +101,7 @@ const defaultParts: PlanePart[] = [
       position: "absolute",
       top: "110%",
       left: "50%",
-      transform: "translateX(-50%)",
+      transform: "translateX(-50%)",  
     },
   },
   {
@@ -132,8 +140,21 @@ const Plane: React.FC<PlaneProps> = ({
   const [hint, setHint] = useState<string>("");
   const [clickedPoint, setClickedPoint] = useState<{ x: number; y: number } | null>(null);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [scale, setScale] = useState<number>(1);
   const popupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Update scale factor based on screen size
+  useEffect(() => {
+    const updateScale = () => {
+      setScale(getResponsiveScale());
+    };
+    
+    updateScale();
+    
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
   // Default problem descriptions for some parts.
   const problemDescriptions: { [key: string]: string } = {
@@ -166,7 +187,6 @@ const Plane: React.FC<PlaneProps> = ({
     return {
       ...baseStyles,
       cursor: "pointer",
-      transform: `${baseStyles.transform || ""} ${isHovered ? "scale(1.05)" : ""}`.trim(),
       transition: "all 0.2s ease",
     };
   };
@@ -183,7 +203,7 @@ const Plane: React.FC<PlaneProps> = ({
         const containerRect = containerRef.current.getBoundingClientRect();
         const targetRect = e.currentTarget.getBoundingClientRect();
         // Position the hint just to the right of the clicked element.
-        const x = targetRect.right - containerRect.left + 10;
+        const x = targetRect.right - containerRect.left + (10 * scale);
         const y = targetRect.top - containerRect.top;
         setClickedPoint({ x, y });
         setHint(problemDescriptions[partName] || `Problem with ${partName}`);
@@ -209,6 +229,7 @@ const Plane: React.FC<PlaneProps> = ({
   return (
     <div
       ref={containerRef}
+      className="px-2 md:px-0"
       style={{ position: "relative", width: "100%", margin: "0 auto", textAlign: "center" }}
     >
       <div
@@ -220,12 +241,14 @@ const Plane: React.FC<PlaneProps> = ({
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
+          // marginTop: "200px",
+          transform: `scale(${scale})`.trim(),
         }}
       >
         {partsToRender.map((part) => (
           <div
             key={part.name}
-            style={part.style}
+            style={{...part.style}}
             onClick={(e) => handlePartClick(e, part.name)}
             onMouseEnter={() => handlePartMouseEnter(part.name)}
             onMouseLeave={handlePartMouseLeave}
@@ -251,12 +274,13 @@ const Plane: React.FC<PlaneProps> = ({
             top: `${clickedPoint.y}px`,
             background: "white",
             color: "black",
-            padding: "8px 12px",
+            padding: `${6 * scale}px ${10 * scale}px`,
             borderRadius: "12px",
-            fontSize: "14px",
+            fontSize: `${12 * scale}px`,
             cursor: "pointer",
             border: "2px solid red",
             zIndex: 100,
+            maxWidth: "200px",
             transform: `translateY(-50%) scale(${isPopupVisible ? 1 : 0.7})`,
             opacity: isPopupVisible ? 1 : 0,
             transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",

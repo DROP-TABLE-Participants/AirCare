@@ -25,7 +25,7 @@ export default function PartsRiskList({ parts }: PartsRiskListProps) {
   return (
     <div className="p-4 w-full border-[0.854px] border-solid border-[#C3CBDC] overflow-hidden">
       <h2 className="text-lg font-bold mb-4 text-gray-800">Parts Health Prediction</h2>
-      <ul className="overflow-y-scroll h-full">
+      <ul className="sm:overflow-y-scroll h-full">
         {parts.map((item, idx) => (
           <PartsRiskListItem key={idx} name={item.name} status={item.status} />
         ))}

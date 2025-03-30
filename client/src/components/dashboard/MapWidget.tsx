@@ -56,17 +56,19 @@ const MapWidget: React.FC<MapWidgetProps> = ({
     ],
   };
 
+  const mapContainerStyle = {
+    borderRadius: '1rem',
+    overflow: 'hidden',
+    width: '100%',
+    height: '100%',
+  };
+
   return (
-    <div style={{
-      borderRadius: '1rem',
-      overflow: 'hidden',
-      width: '100%',
-      height: '100%',
-    }}>
+    <div className="map-container" style={mapContainerStyle}>
       <Map
         initialViewState={viewport}
         mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', minHeight: '500px' }}
         mapStyle="mapbox://styles/mapbox/light-v11"
       >
         <Marker longitude={start[0]} latitude={start[1]}>
@@ -89,6 +91,13 @@ const MapWidget: React.FC<MapWidgetProps> = ({
           />
         </Source>
       </Map>
+      <style jsx>{`
+        @media (min-width: 768px) {
+          .map-container {
+            min-height: 100%;
+          }
+        }
+      `}</style>
     </div>
   );
 };
