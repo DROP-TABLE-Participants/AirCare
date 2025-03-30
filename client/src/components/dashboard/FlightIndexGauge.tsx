@@ -15,6 +15,16 @@ const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
     { name: "Arc 4", value: 25, fill: "#1E4AFF" },
   ];
 
+  // Define chart dimensions for dot positioning
+  const chartWidth = 300;
+  const chartHeight = 300;
+  const centerX = chartWidth / 2;
+  const centerY = chartHeight / 2;
+  const innerRadius = 130;
+  
+  // Generate positions for the decorative dots
+  const dotPositions = generateDotPositions(centerX, centerY, innerRadius - 15, 20);
+
   if (flightIndex === undefined) {
     return (
       <div className="p-6 w-full h-full border-[0.854px] border-solid border-[#C3CBDC] flex items-center justify-center">
@@ -27,19 +37,19 @@ const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
     <div className="p-6 w-full h-full border-[0.854px] border-solid border-[#C3CBDC]">
       {/* Title */}
       <div className="text-gray-700 mb-2">
-        <span className="font-semibold text-sm">Flight Index</span>
+        <span className="font-semibold text-sm">Flight Safety Index</span>
       </div>
 
       {/* Gauge Container */}
-      <div className="flex items-center justify-center w-full h-full relative">
-        <PieChart width={300} height={300}>
+      <div className="flex items-center justify-center w-full h-full relative mt-16">
+        <PieChart width={chartWidth} height={chartHeight}>
           <Pie
             data={gaugeData}
             dataKey="value"
             startAngle={180}
             endAngle={0}
-            innerRadius={70}
-            outerRadius={90}
+            innerRadius={innerRadius}
+            outerRadius={145}
             stroke="none"
             cornerRadius={10}
             paddingAngle={4}
@@ -49,13 +59,44 @@ const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
               value={flightIndex.toString()}
               position="center"
               fill="#000"
-              style={{ fontSize: "28px", fontWeight: "bold" }}
+              style={{ fontSize: "42px", fontWeight: "bold" }}
             />
           </Pie>
+          
+          {/* Add the decorative dots */}
+          <svg>
+            {dotPositions.map((dot, index) => (
+              <circle
+                key={index}
+                cx={dot.x}
+                cy={dot.y}
+                r={1.3}
+                fill="#7A7A7A"
+                opacity={0.8}
+              />
+            ))}
+          </svg>
         </PieChart>
       </div>
     </div>
   );
+};
+
+// Helper function to generate dot positions around the gauge
+const generateDotPositions = (
+  centerX: number,
+  centerY: number,
+  radius: number,
+  count: number
+) => {
+  const dots = [];
+  for (let i = 0; i <= count; i++) {
+    const angle = (Math.PI * i) / count;
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY - radius * Math.sin(angle);
+    dots.push({ x, y });
+  }
+  return dots;
 };
 
 export default FlightIndexGauge;
