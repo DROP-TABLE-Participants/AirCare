@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { FireIcon } from "@heroicons/react/24/solid";
+import { RulForecastVM } from "@/api/models/rulData";
 
 interface DataPoint {
   name: string;
@@ -22,6 +23,7 @@ export interface AirplaneStats {
 
 interface FuelStatsProps {
   airplane?: AirplaneStats;
+  rulForecastData?: RulForecastVM[];
 }
 
 const defaultStats: AirplaneStats = {
@@ -43,15 +45,11 @@ const defaultStats: AirplaneStats = {
   ],
 };
 
-export default function FuelStats({ airplane }: FuelStatsProps) {
+export default function FuelStats({ airplane, rulForecastData }: FuelStatsProps) {
   // If no airplane stats provided, show a fallback message.
-  if (!airplane) {
+  if (!airplane && !rulForecastData?.length) {
     return (
       <div className="p-6 w-full border-[0.854px] border-solid border-[#C3CBDC]">
-        <div className="flex items-center space-x-2 text-gray-700 mb-4">
-          <FireIcon className="w-5 h-5 text-red-500" />
-          <span className="font-semibold text-sm">Fuel Efficiency & Engine Health</span>
-        </div>
         <div className="flex items-center justify-center h-40 w-full text-gray-500">
           No aircraft selected
         </div>
@@ -59,11 +57,41 @@ export default function FuelStats({ airplane }: FuelStatsProps) {
     );
   }
 
-  // Use the provided airplane stats if available.
-  const stats = airplane;
   const [activeTab, setActiveTab] = useState<"fuel" | "engine">("fuel");
-  const data = activeTab === "fuel" ? stats.fuelEfficiency : stats.engineHealth;
-  const bigValue = data[data.length - 1]?.value || 0;
+  
+  // Process RUL Forecast data if available
+  let engineHealthData = airplane?.engineHealth || defaultStats.engineHealth;
+  let fuelEfficiencyData = airplane?.fuelEfficiency || defaultStats.fuelEfficiency;
+  let currentEngineHealth: number | undefined;
+  let currentFuelEfficiency: number | undefined;
+
+  if (rulForecastData && rulForecastData.length > 0) {
+    // Get the latest engine health from API response
+    currentEngineHealth = Math.round(rulForecastData[0].engineHealthPercentage * 100);
+    
+    // Calculate fuel efficiency as engineHealth - 17
+    currentFuelEfficiency = Math.max(0, currentEngineHealth - 17);
+    
+    // Generate chart data for engine health from API
+    engineHealthData = rulForecastData.map((forecast, index) => ({
+      name: formatDate(forecast.date),
+      value: Math.round(forecast.engineHealthPercentage * 100)
+    })).reverse(); // Reverse to show latest data on the right
+    
+    // Generate chart data for fuel efficiency based on engine health
+    fuelEfficiencyData = rulForecastData.map((forecast, index) => ({
+      name: formatDate(forecast.date),
+      value: Math.max(0, Math.round(forecast.engineHealthPercentage * 100) - 17)
+    })).reverse(); // Reverse to show latest data on the right
+  }
+
+  const data = activeTab === "fuel" ? fuelEfficiencyData : engineHealthData;
+  
+  // Use the latest value from the calculated data or from the airplane data
+  const bigValue = activeTab === "fuel" 
+    ? (currentFuelEfficiency !== undefined ? currentFuelEfficiency : data[data.length - 1]?.value || 0)
+    : (currentEngineHealth !== undefined ? currentEngineHealth : data[data.length - 1]?.value || 0);
+  
   const subtitle = activeTab === "fuel" ? "Fuel Efficiency" : "Engine Health";
 
   return (
@@ -96,6 +124,13 @@ export default function FuelStats({ airplane }: FuelStatsProps) {
         <div className="mb-4 sm:mb-0 sm:mr-8">
           <h2 className="text-5xl font-bold leading-tight">{bigValue}%</h2>
           <p className="text-lg text-gray-500">{subtitle}</p>
+          {rulForecastData && activeTab === "engine" && (
+            <p className="text-sm text-blue-600 mt-1">
+              {rulForecastData[0]?.isOkayToFlight 
+                ? "Safe to fly" 
+                : "Maintenance required"}
+            </p>
+          )}
         </div>
 
         {/* Right side: Chart */}
@@ -124,4 +159,14 @@ export default function FuelStats({ airplane }: FuelStatsProps) {
       </div>
     </div>
   );
+}
+
+// Helper function to format ISO date string to readable format
+function formatDate(isoString: string): string {
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleString('default', { month: 'short', day: 'numeric' });
+  } catch {
+    return "Unknown";
+  }
 }

@@ -11,10 +11,18 @@ import Plane from "@/components/dashboard/plane";
 import AirplaneSelector, { Airplane } from "@/components/misc/AirplaneSelector";
 import FlightSelector from "@/components/misc/FlightSelector";
 import SkeletonLoader from "@/components/dashboard/SkeletonLoader";
+import SensorDataModal from "@/components/dashboard/SensorDataModal";
+import { SensorData } from "@/api/models/sensorData";
+import { FailurePredictionVM } from "@/api/models/failureData";
+import { RulForecastVM } from "@/api/models/rulData";
+
+import {sendFailurePrediction, sendRulForecast} from "@/api/services/planeService";
 
 // Import data
 import { airplanes } from "@/data/airplanes";
 import { flights } from "@/data/flights";
+import { send } from "process";
+import { data } from "framer-motion/client";
 
 export default function DashboardPage() {
   // Keep track of the selected airplane id
@@ -32,6 +40,22 @@ export default function DashboardPage() {
   
   // State to control sidebar visibility on mobile
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // State to control sensor data modal visibility
+  const [isSensorDataModalOpen, setIsSensorDataModalOpen] = useState(false);
+  
+  // Sample realistic sensor data with normalized values
+  const [sensorData, setSensorData] = useState<SensorData>({
+    oilPressure: 375, // psi (0-500 range)
+    oilTemperature: 95, // °C (-40-150 range)
+    cylinderHeadTemperature: 210, // °C (-40-300 range)
+    engineVibration: 42, // units (0-100 range)
+    fuelFlowRate: 4250, // kg/hour (0-10000 range)
+    engineRPM: 22500, // RPM (0-30000 range)
+    hydraulicPressure: 3200, // psi (0-5000 range)
+    cabinPressureDifferential: 7.8, // psi (0-50 range)
+    outsideAirTemperature: -15 // °C (-50-50 range)
+  });
 
   // Reset flight selection when airplane changes
   useEffect(() => {
@@ -57,14 +81,118 @@ export default function DashboardPage() {
     if (isFullyConfigured) {
       setIsAnalyticsLoading(true);
       
-      // Simulate API call with 2 second delay
-      const timer = setTimeout(() => {
-        setIsAnalyticsLoading(false);
-      }, 2000);
+      // Generate slightly randomized sensor data for variety
+      setSensorData({
+        oilPressure: Math.floor(350 + Math.random() * 50), // 350-400 psi
+        oilTemperature: Math.floor(90 + Math.random() * 25), // 90-115 °C
+        cylinderHeadTemperature: Math.floor(200 + Math.random() * 40), // 200-240 °C
+        engineVibration: Math.floor(35 + Math.random() * 25), // 35-60 units
+        fuelFlowRate: Math.floor(4000 + Math.random() * 1000), // 4000-5000 kg/hour
+        engineRPM: Math.floor(22000 + Math.random() * 3000), // 22000-25000 RPM
+        hydraulicPressure: Math.floor(3000 + Math.random() * 800), // 3000-3800 psi
+        cabinPressureDifferential: Math.floor(7 + Math.random() * 2 * 10) / 10, // 7.0-9.0 psi
+        outsideAirTemperature: Math.floor(-20 + Math.random() * 30) // -20 to +10 °C
+      });
       
-      return () => clearTimeout(timer);
+      setIsAnalyticsLoading(false);
+      // Show sensor data modal
+      setIsSensorDataModalOpen(true);
     }
   }, [isFullyConfigured, selectedPlaneId, departureId, arrivalId]);
+  
+  // State to track which parts are faulty based on sensor data
+  const [faultyParts, setFaultyParts] = useState<string[]>([]);
+  
+  // State to store the API response from failure prediction
+  const [failurePrediction, setFailurePrediction] = useState<FailurePredictionVM | null>(null);
+  
+  // State to store the RUL forecast data from API
+  const [rulForecast, setRulForecast] = useState<RulForecastVM[] | null>(null);
+  
+  // Get the current engine health percentage from the RUL forecast (if available)
+  const currentEngineHealth = rulForecast && rulForecast.length > 0 
+    ? Math.round(rulForecast[0].engineHealthPercentage * 100) // Convert to percentage and round
+    : undefined;
+
+  // Function to handle saving updated sensor data
+  const handleSensorDataSave = (updatedData: SensorData) => {
+    // Update the sensor data state
+    setSensorData(updatedData);
+    
+    // Determine which parts are faulty based on sensor readings
+    const newFaultyParts: string[] = [];
+    
+    // Oil system issues
+    if (updatedData.oilPressure < 250 || updatedData.oilPressure > 420) {
+      newFaultyParts.push('leftWing');  // Using left wing to represent oil system issues
+    }
+    
+    // Engine issues based on temperature or vibration
+    if (updatedData.cylinderHeadTemperature > 250 || 
+        updatedData.engineVibration > 60 || 
+        updatedData.oilTemperature > 120) {
+      newFaultyParts.push('backLeftWing');  // Using back left wing to represent engine issues
+    }
+    
+    // Hydraulic system issues
+    if (updatedData.hydraulicPressure < 2500 || updatedData.hydraulicPressure > 4200) {
+      newFaultyParts.push('rightWing');  // Using right wing to represent hydraulic system issues
+    }
+    
+    // Fuel system issues
+    if (updatedData.fuelFlowRate < 3500 || updatedData.fuelFlowRate > 6000) {
+      newFaultyParts.push('backRightWing');  // Using back right wing to represent fuel system issues
+    }
+    
+    // Update the faulty parts state
+    setFaultyParts(newFaultyParts);
+
+    setIsSensorDataModalOpen(false)
+    
+    // Send the failure prediction request with the updated sensor data
+    sendFailurePrediction({
+      aircraftModel: selectedPlane!.name,
+      origin: departureFlight!.id,
+      destination: arrivalFlight!.id,
+      flightCycles: 1,
+      flightHours: 1,
+      payloadWeight: 1,
+      departureTime: new Date().toISOString(),
+      arrivalTime: new Date(new Date().getTime() + 6 * 60 * 60 * 1000).toISOString(),
+      sensorsData: {
+        oilPressure: updatedData.oilPressure,
+        oilTemperature: updatedData.oilTemperature,
+        cylinderHeadTemperature: updatedData.cylinderHeadTemperature,
+        engineVibration: updatedData.engineVibration,
+        fuelFlowRate: updatedData.fuelFlowRate,
+        engineRPM: updatedData.engineRPM,
+        hydraulicPressure: updatedData.hydraulicPressure,
+        cabinPressureDifferential: updatedData.cabinPressureDifferential,
+        outsideAirTemperature: updatedData.outsideAirTemperature
+      }
+    }).then(response => {
+      // Store the API response in the state
+      setFailurePrediction(response);
+    
+    }).catch(error => {
+      console.error("Error fetching failure prediction:", error);
+    });
+    
+    // Send the RUL forecast request with updated sensor data
+    sendRulForecast({
+      aircraftModel: selectedPlane!.name,
+      flightCycles: 1,
+      flightHours: 1,
+      lastReplacementDateOfEngine: new Date(new Date().getTime() - 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year ago
+      sensorsData: updatedData
+    }).then(response => {
+      // Store the RUL forecast response
+      setRulForecast(response);
+      console.log("RUL Forecast received:", response);
+    }).catch(error => {
+      console.error("Error fetching RUL forecast:", error);
+    });
+  };
 
   // Handle flight selection
   const handleFlightSelection = (newDepartureId: string | null, newArrivalId: string | null) => {
@@ -247,9 +375,9 @@ export default function DashboardPage() {
           {isFullyConfigured ? (
             isAnalyticsLoading ? (
               <>
-                <SkeletonLoader type="fuelStats" />
-                <SkeletonLoader type="flightIndex" />
-                <SkeletonLoader type="riskList" />
+                <SkeletonLoader />
+                <SkeletonLoader />
+                <SkeletonLoader />
               </>
             ) : (
               <>
@@ -262,9 +390,14 @@ export default function DashboardPage() {
                         }
                       : undefined
                   }
+                  rulForecastData={rulForecast}
                 />
-                <FlightIndexGauge flightIndex={selectedPlane?.flightIndex} />
-                <PartsRiskList parts={selectedPlane?.parts}/>
+                <FlightIndexGauge flightIndex={failurePrediction?.featureIndex} />
+                <PartsRiskList 
+                  parts={selectedPlane?.parts}
+                  partFailures={failurePrediction?.partFailures || []}
+                  featureIndex={failurePrediction?.featureIndex}
+                />
               </>
             )
           ) : (
@@ -324,9 +457,11 @@ export default function DashboardPage() {
                   <Plane
                     problemParts={
                       isFullyConfigured && !isAnalyticsLoading
-                        ? selectedPlane.partsHealth
-                            .filter((p) => p.faulty)
-                            .map((p) => p.name)
+                        ? faultyParts.length > 0 
+                          ? faultyParts 
+                          : selectedPlane.partsHealth
+                              .filter((p) => p.faulty)
+                              .map((p) => p.name)
                         : [] // Empty array means no red parts will be shown
                     }
                   />
@@ -422,6 +557,15 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Sensor Data Modal */}
+      <SensorDataModal
+        isOpen={isSensorDataModalOpen}
+        onClose={() => setIsSensorDataModalOpen(false)}
+        sensorData={sensorData}
+        aircraftName={selectedPlane?.name || ""}
+        onSave={handleSensorDataSave}
+      />
     </div>
   );
 }

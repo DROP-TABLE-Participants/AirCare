@@ -9,11 +9,11 @@ import axios from 'axios';
  */
 
 const axiosInstance = axios.create({
-    baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.example.com'}/api/v1/Predict`,
+    baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api-aircare.dressr.fashion'}/api/v1/Predict`,
     // You can set default headers or other config options here.
-    // headers: {
-    //   'Content-Type': 'application/json',
-    // },
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
 
 /**
