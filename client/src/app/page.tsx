@@ -1,14 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import PlaneSchematic from "../components/dashboard/PlaneSchematic";
-import WeatherHeatmap from "../components/dashboard/WeatherHeatmap";
 import PartsRiskList from "../components/dashboard/PartsRiskList";
 import FlightIndexGauge from "@/components/dashboard/FlightIndexGauge";
 import FuelStats from "../components/dashboard/FuelStats";
-import Report from "@/components/dashboard/Report";
 import MapWidget from "@/components/dashboard/MapWidget";
 import Plane from "@/components/dashboard/plane";
-import AirplaneSelector, { Airplane } from "@/components/misc/AirplaneSelector";
+import AirplaneSelector from "@/components/misc/AirplaneSelector";
 import FlightSelector from "@/components/misc/FlightSelector";
 import SkeletonLoader from "@/components/dashboard/SkeletonLoader";
 import SensorDataModal from "@/components/dashboard/SensorDataModal";
@@ -18,138 +15,107 @@ import { RulForecastVM } from "@/api/models/rulData";
 
 import {sendFailurePrediction, sendRulForecast} from "@/api/services/planeService";
 
-// Import data
 import { airplanes } from "@/data/airplanes";
 import { flights } from "@/data/flights";
-import { send } from "process";
-import { data } from "framer-motion/client";
+import Image from "next/image";
 
 export default function DashboardPage() {
-  // Keep track of the selected airplane id
+
   const [selectedPlaneId, setSelectedPlaneId] = useState<string | null>(null);
-  
-  // Keep track of departure and arrival ids
+
   const [departureId, setDepartureId] = useState<string | null>(null);
   const [arrivalId, setArrivalId] = useState<string | null>(null);
-  
-  // State to track if the plane dropdown is open
+
   const [isPlaneDropdownOpen, setIsPlaneDropdownOpen] = useState(false);
-  
-  // State for loading analytics data
+
   const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(false);
-  
-  // State to control sidebar visibility on mobile
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // State to control sensor data modal visibility
   const [isSensorDataModalOpen, setIsSensorDataModalOpen] = useState(false);
-  
-  // Sample realistic sensor data with normalized values
+
   const [sensorData, setSensorData] = useState<SensorData>({
-    oilPressure: 375, // psi (0-500 range)
-    oilTemperature: 95, // °C (-40-150 range)
-    cylinderHeadTemperature: 210, // °C (-40-300 range)
-    engineVibration: 42, // units (0-100 range)
-    fuelFlowRate: 4250, // kg/hour (0-10000 range)
-    engineRPM: 22500, // RPM (0-30000 range)
-    hydraulicPressure: 3200, // psi (0-5000 range)
-    cabinPressureDifferential: 7.8, // psi (0-50 range)
-    outsideAirTemperature: -15 // °C (-50-50 range)
+    oilPressure: 375, 
+    oilTemperature: 95, 
+    cylinderHeadTemperature: 210, 
+    engineVibration: 42, 
+    fuelFlowRate: 4250, 
+    engineRPM: 22500, 
+    hydraulicPressure: 3200, 
+    cabinPressureDifferential: 7.8, 
+    outsideAirTemperature: -15 
   });
 
-  // Reset flight selection when airplane changes
   useEffect(() => {
     setDepartureId(null);
     setArrivalId(null);
   }, [selectedPlaneId]);
 
-  // Find the airplane object by id
   const selectedPlane = airplanes.find((plane) => plane.id === selectedPlaneId);
-  
-  // Find the departure and arrival objects
+
   const departureFlight = flights.find((flight) => flight.id === departureId);
   const arrivalFlight = flights.find((flight) => flight.id === arrivalId);
 
-  // Track if a complete flight route is selected
   const isFlightSelected = !!(departureFlight && arrivalFlight);
 
-  // Track if both airplane and flight are selected
   const isFullyConfigured = !!selectedPlane && isFlightSelected;
 
-  // Simulate loading analytics data when all required fields are selected
   useEffect(() => {
     if (isFullyConfigured) {
       setIsAnalyticsLoading(true);
-      
-      // Generate slightly randomized sensor data for variety
+
       setSensorData({
-        oilPressure: Math.floor(350 + Math.random() * 50), // 350-400 psi
-        oilTemperature: Math.floor(90 + Math.random() * 25), // 90-115 °C
-        cylinderHeadTemperature: Math.floor(200 + Math.random() * 40), // 200-240 °C
-        engineVibration: Math.floor(35 + Math.random() * 25), // 35-60 units
-        fuelFlowRate: Math.floor(4000 + Math.random() * 1000), // 4000-5000 kg/hour
-        engineRPM: Math.floor(22000 + Math.random() * 3000), // 22000-25000 RPM
-        hydraulicPressure: Math.floor(3000 + Math.random() * 800), // 3000-3800 psi
-        cabinPressureDifferential: Math.floor(7 + Math.random() * 2 * 10) / 10, // 7.0-9.0 psi
-        outsideAirTemperature: Math.floor(-20 + Math.random() * 30) // -20 to +10 °C
+        oilPressure: Math.floor(350 + Math.random() * 50), 
+        oilTemperature: Math.floor(90 + Math.random() * 25), 
+        cylinderHeadTemperature: Math.floor(200 + Math.random() * 40), 
+        engineVibration: Math.floor(35 + Math.random() * 25), 
+        fuelFlowRate: Math.floor(4000 + Math.random() * 1000), 
+        engineRPM: Math.floor(22000 + Math.random() * 3000), 
+        hydraulicPressure: Math.floor(3000 + Math.random() * 800), 
+        cabinPressureDifferential: Math.floor(7 + Math.random() * 2 * 10) / 10, 
+        outsideAirTemperature: Math.floor(-20 + Math.random() * 30) 
       });
-      
+
       setIsAnalyticsLoading(false);
-      // Show sensor data modal
+
       setIsSensorDataModalOpen(true);
     }
   }, [isFullyConfigured, selectedPlaneId, departureId, arrivalId]);
-  
-  // State to track which parts are faulty based on sensor data
-  const [faultyParts, setFaultyParts] = useState<string[]>([]);
-  
-  // State to store the API response from failure prediction
-  const [failurePrediction, setFailurePrediction] = useState<FailurePredictionVM | null>(null);
-  
-  // State to store the RUL forecast data from API
-  const [rulForecast, setRulForecast] = useState<RulForecastVM[] | null>(null);
-  
-  // Get the current engine health percentage from the RUL forecast (if available)
-  const currentEngineHealth = rulForecast && rulForecast.length > 0 
-    ? Math.round(rulForecast[0].engineHealthPercentage * 100) // Convert to percentage and round
-    : undefined;
 
-  // Function to handle saving updated sensor data
+  const [faultyParts, setFaultyParts] = useState<string[]>([]);
+
+  const [failurePrediction, setFailurePrediction] = useState<FailurePredictionVM | null>(null);
+
+  const [rulForecast, setRulForecast] = useState<RulForecastVM[] | null>(null);
+
   const handleSensorDataSave = (updatedData: SensorData) => {
-    // Update the sensor data state
+
     setSensorData(updatedData);
-    
-    // Determine which parts are faulty based on sensor readings
+
     const newFaultyParts: string[] = [];
-    
-    // Oil system issues
+
     if (updatedData.oilPressure < 250 || updatedData.oilPressure > 420) {
-      newFaultyParts.push('leftWing');  // Using left wing to represent oil system issues
+      newFaultyParts.push('leftWing');  
     }
-    
-    // Engine issues based on temperature or vibration
+
     if (updatedData.cylinderHeadTemperature > 250 || 
         updatedData.engineVibration > 60 || 
         updatedData.oilTemperature > 120) {
-      newFaultyParts.push('backLeftWing');  // Using back left wing to represent engine issues
+      newFaultyParts.push('backLeftWing');  
     }
-    
-    // Hydraulic system issues
+
     if (updatedData.hydraulicPressure < 2500 || updatedData.hydraulicPressure > 4200) {
-      newFaultyParts.push('rightWing');  // Using right wing to represent hydraulic system issues
+      newFaultyParts.push('rightWing');  
     }
-    
-    // Fuel system issues
+
     if (updatedData.fuelFlowRate < 3500 || updatedData.fuelFlowRate > 6000) {
-      newFaultyParts.push('backRightWing');  // Using back right wing to represent fuel system issues
+      newFaultyParts.push('backRightWing');  
     }
-    
-    // Update the faulty parts state
+
     setFaultyParts(newFaultyParts);
 
     setIsSensorDataModalOpen(false)
-    
-    // Send the failure prediction request with the updated sensor data
+
     sendFailurePrediction({
       aircraftModel: selectedPlane!.name,
       origin: departureFlight!.id,
@@ -171,22 +137,21 @@ export default function DashboardPage() {
         outsideAirTemperature: updatedData.outsideAirTemperature
       }
     }).then(response => {
-      // Store the API response in the state
+
       setFailurePrediction(response);
-    
+
     }).catch(error => {
       console.error("Error fetching failure prediction:", error);
     });
-    
-    // Send the RUL forecast request with updated sensor data
+
     sendRulForecast({
       aircraftModel: selectedPlane!.name,
       flightCycles: 1,
       flightHours: 1,
-      lastReplacementDateOfEngine: new Date(new Date().getTime() - 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year ago
+      lastReplacementDateOfEngine: new Date(new Date().getTime() - 365 * 24 * 60 * 60 * 1000).toISOString(), 
       sensorsData: updatedData
     }).then(response => {
-      // Store the RUL forecast response
+
       setRulForecast(response);
       console.log("RUL Forecast received:", response);
     }).catch(error => {
@@ -194,72 +159,59 @@ export default function DashboardPage() {
     });
   };
 
-  // Handle flight selection
   const handleFlightSelection = (newDepartureId: string | null, newArrivalId: string | null) => {
     setDepartureId(newDepartureId);
     setArrivalId(newArrivalId);
   };
 
-  // Toggle plane dropdown
   const togglePlaneDropdown = () => {
     setIsPlaneDropdownOpen(prev => !prev);
   };
-  
-  // Toggle sidebar on mobile
+
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => !prev);
   };
 
-  // Allow resetting flight selection
   const resetFlightSelection = () => {
     setDepartureId(null);
     setArrivalId(null);
   };
 
-  // Allow selecting a different plane
   const handleChangePlane = (planeId: string) => {
     setSelectedPlaneId(planeId);
     setIsPlaneDropdownOpen(false);
   };
-  
-  // Handle the export functionality
+
   const handleExport = () => {
-    // Get current date for calculations
+
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth(); // 0-11 (January-December)
+    const currentMonth = currentDate.getMonth(); 
     const currentYear = currentDate.getFullYear();
-    
-    // Get current month name
+
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const currentMonthName = monthNames[currentMonth];
-    
-    // Create CSV content with headers
+
     let csvContent = "Aircraft,Current Engine Health (%),Months Until Maintenance Required,Maintenance Date,Notes\n";
-    
-    // For each airplane, calculate engine maintenance projection
+
     airplanes.forEach(airplane => {
-      // Find the most recent engine health data
+
       let currentEngineHealth = 0;
       const lastHealthEntry = airplane.engineHealth[airplane.engineHealth.length - 1];
-      
-      // Get the current health or the last recorded health
+
       const engineHealthForCurrentMonth = airplane.engineHealth.find(entry => entry.name === currentMonthName);
       currentEngineHealth = engineHealthForCurrentMonth ? engineHealthForCurrentMonth.value : lastHealthEntry.value;
-      
-      // Calculate months until maintenance (when engine health reaches 40%)
+
       let monthsUntilMaintenance = 0;
       let projectedHealth = currentEngineHealth;
-      
+
       while (projectedHealth > 40) {
-        projectedHealth -= 4; // 4% reduction per month
+        projectedHealth -= 4; 
         monthsUntilMaintenance++;
       }
-      
-      // Calculate maintenance date
+
       const maintenanceDate = new Date(currentYear, currentMonth + monthsUntilMaintenance, 1);
       const formattedDate = `${maintenanceDate.getDate().toString().padStart(2, '0')}-${(maintenanceDate.getMonth() + 1).toString().padStart(2, '0')}-${maintenanceDate.getFullYear()}`;
-      
-      // Generate notes based on urgency
+
       let notes = "";
       if (monthsUntilMaintenance <= 2) {
         notes = "URGENT - Schedule maintenance immediately";
@@ -268,8 +220,7 @@ export default function DashboardPage() {
       } else {
         notes = "Routine maintenance schedule";
       }
-      
-      // Add row to CSV
+
       csvContent += [
         airplane.name,
         currentEngineHealth.toFixed(1),
@@ -277,14 +228,13 @@ export default function DashboardPage() {
         formattedDate,
         notes
       ].map(value => {
-        // Wrap fields containing commas with quotes
+
         const stringValue = String(value);
         return stringValue.includes(',') ? `"${stringValue}"` : stringValue;
       }).join(',');
       csvContent += '\n';
     });
-    
-    // Create a blob and download it
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -298,7 +248,7 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full sm:max-h-screen md:h-screen flex flex-col md:flex-row overflow-scroll bg-[linear-gradient(180deg,_#F4F5F7_0%,_#E6E8F8_100%)]">
-      {/* Mobile Sidebar Toggle */}
+      {}
       <button 
         onClick={toggleSidebar}
         className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-full bg-white/80 shadow-md"
@@ -309,7 +259,7 @@ export default function DashboardPage() {
         </svg>
       </button>
 
-      {/* Sidebar - Hidden on mobile by default */}
+      {}
       <div className={`sidebar fixed md:static h-full w-screen md:w-20 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 z-40 bg-white/90 md:bg-transparent backdrop-blur-lg md:backdrop-blur-none border-r-[0.85px] border-[#C3CBDC]`}>
         <div className="flex md:hidden justify-end p-4">
           <button onClick={toggleSidebar} className="p-2" aria-label="Close sidebar">
@@ -319,28 +269,28 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Dashboard Icon */}
+        {}
         <div className="flex justify-center items-center h-20 w-full cursor-pointer hover:bg-[rgba(255,_255,_255,_0.5)] transition-colors">
           <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
           </svg>
         </div>
-        
-        {/* Analytics Icon */}
+
+        {}
         <div className="flex justify-center items-center h-20 w-full cursor-pointer hover:bg-[rgba(255,_255,_255,_0.5)] transition-colors">
           <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
           </svg>
         </div>
-        
-        {/* Fleet Icon */}
+
+        {}
         <div className="flex justify-center items-center h-20 w-full cursor-pointer hover:bg-[rgba(255,_255,_255,_0.5)] transition-colors">
           <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
           </svg>
         </div>
-        
-        {/* Settings Icon */}
+
+        {}
         <div className="flex justify-center items-center h-20 w-full cursor-pointer hover:bg-[rgba(255,_255,_255,_0.5)] transition-colors">
           <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -349,16 +299,16 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Main View */}
+      {}
       <div className="main-view h-full w-full overflow-auto flex flex-col bg-none">
-        {/* Navbar */}
+        {}
         <div className="navbar w-full p-5 flex flex-row justify-between items-center bg-none border-b-[0.85px] border-[#C3CBDC]">
-          {/* Logo on the left */}
+          {}
           <div className="flex items-center">
-            <img src="/logo.svg" alt="Logo" className="h-8 w-28 mr-2" />
+            <Image src="/logo.svg" alt="Logo" className="h-8 w-28 mr-2" width={0} height={0}/>
           </div>
-          
-          {/* Export button on the right - always visible */}
+
+          {}
           <button 
             onClick={handleExport}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium text-sm flex items-center transition-colors"
@@ -370,7 +320,7 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Top Section */}
+        {}
         <div className="top-section max-h-none md:max-h-[35%] w-full flex flex-col md:flex-row bg-none overflow-x-auto">
           {isFullyConfigured ? (
             isAnalyticsLoading ? (
@@ -390,7 +340,7 @@ export default function DashboardPage() {
                         }
                       : undefined
                   }
-                  rulForecastData={rulForecast}
+                  rulForecastData={rulForecast || undefined}
                 />
                 <FlightIndexGauge flightIndex={failurePrediction?.featureIndex} />
                 <PartsRiskList 
@@ -415,9 +365,9 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Bottom Section */}
+        {}
         <div className="bottom-section flex-1 w-full p-3 md:p-5 flex flex-col md:flex-row gap-3 md:gap-5 bg-none overflow-auto">
-          {/* Airplane Placeholder */}
+          {}
           <div className="plane-placeholder w-full md:h-full md:flex-1 bg-[rgba(255,_255,_255,_0.42)] backdrop-filter backdrop-blur-[11px] border-[0.854px] border-solid border-[#C3CBDC] rounded-[1.0625rem] p-3 md:p-6">
             <div className="rounded col-span-2 min-h-[300px] md:min-h-[500px] flex items-center justify-center relative">
               {selectedPlane ? (
@@ -433,7 +383,7 @@ export default function DashboardPage() {
                       >
                         Change plane
                       </button>
-                      
+
                       {isPlaneDropdownOpen && (
                         <div className="absolute right-0 mt-2 w-44 origin-top-right rounded-md bg-gray-900 shadow-lg ring-1 ring-black ring-opacity-5 z-20">
                           <div className="py-1 text-gray-200">
@@ -453,7 +403,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                   </div>
-                  {/* Render the Plane component, showing problem parts only when fully configured */}
+                  {}
                   <Plane
                     problemParts={
                       isFullyConfigured && !isAnalyticsLoading
@@ -462,7 +412,7 @@ export default function DashboardPage() {
                           : selectedPlane.partsHealth
                               .filter((p) => p.faulty)
                               .map((p) => p.name)
-                        : [] // Empty array means no red parts will be shown
+                        : [] 
                     }
                   />
                 </>
@@ -475,13 +425,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Map Section */}
+          {}
           <div className="map-placeholder bg-[rgba(255,_255,_255,_0.42)] backdrop-filter backdrop-blur-[11px] w-full md:h-full md:w-[40%] border-[0.854px] border-solid border-[#C3CBDC] rounded-[1.0625rem] p-3 md:p-6">
             <div className="flex flex-col h-full">
               <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 mb-4">
                 <h1 className="text-black text-lg md:text-xl font-semibold">Flight Map</h1>
-                
-                {/* Show FlightSelector only if plane is selected AND no complete flight route yet */}
+
+                {}
                 {selectedPlane && !isFlightSelected ? (
                   <FlightSelector
                     flights={flights}
@@ -498,13 +448,13 @@ export default function DashboardPage() {
                   <div className="text-sm text-gray-500">Select an airplane first</div>
                 )}
               </div>
-              
+
               {isFlightSelected ? (
                 <>
                   <div className="text-sm text-gray-600 mb-2">
                     <span className="font-medium">Flight Route:</span> {departureFlight!.name} to {arrivalFlight!.name}
                   </div>
-                  
+
                   <div className="flex-grow relative min-h-[250px]">
                     <MapWidget 
                       start={departureFlight!.coords} 
@@ -512,8 +462,8 @@ export default function DashboardPage() {
                       startName={departureFlight!.name}
                       endName={arrivalFlight!.name}
                     />
-                    
-                    {/* Flight details overlay */}
+
+                    {}
                     <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm p-2 md:p-3 rounded-lg shadow-md">
                       <div className="text-xs md:text-sm font-medium">Flight Details</div>
                       <div className="text-xs">Distance: {Math.round(getDistanceInKm(
@@ -543,7 +493,7 @@ export default function DashboardPage() {
                     ) : (
                       <p className="mt-1 text-xs md:text-sm">Please select an airplane first, then you can select a flight route.</p>
                     )}
-                    
+
                     {(departureId && !arrivalId) && (
                       <div className="mt-4 text-xs md:text-sm p-2 bg-blue-100 text-blue-800 rounded-md">
                         Departure selected: <strong>{departureFlight?.name}</strong><br/>
@@ -558,7 +508,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Sensor Data Modal */}
+      {}
       <SensorDataModal
         isOpen={isSensorDataModalOpen}
         onClose={() => setIsSensorDataModalOpen(false)}
@@ -570,9 +520,8 @@ export default function DashboardPage() {
   );
 }
 
-// Helper function to calculate distance between two points in kilometers
 function getDistanceInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371; // Radius of the earth in km
+  const R = 6371; 
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
   const a = 
@@ -580,7 +529,7 @@ function getDistanceInKm(lat1: number, lon1: number, lat2: number, lon2: number)
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-  const d = R * c; // Distance in km
+  const d = R * c; 
   return d;
 }
 

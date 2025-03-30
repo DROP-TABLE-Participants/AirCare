@@ -7,7 +7,7 @@ interface FlightIndexGaugeProps {
 }
 
 const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
-  // Fixed gauge data (4 segments, each 25%) – the gauge range is always 0-1000.
+
   const gaugeData = [
     { name: "Arc 1", value: 25, fill: "#7DE2FC" },
     { name: "Arc 2", value: 25, fill: "#4FC3F7" },
@@ -15,14 +15,12 @@ const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
     { name: "Arc 4", value: 25, fill: "#1E4AFF" },
   ];
 
-  // Define chart dimensions for dot positioning
   const chartWidth = 300;
   const chartHeight = 300;
   const centerX = chartWidth / 2;
   const centerY = chartHeight / 2;
   const innerRadius = 130;
-  
-  // Generate positions for the decorative dots
+
   const dotPositions = generateDotPositions(centerX, centerY, innerRadius - 15, 20);
 
   if (flightIndex === undefined) {
@@ -35,12 +33,12 @@ const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
 
   return (
     <div className="p-6 w-full h-full border-[0.854px] border-solid border-[#C3CBDC]">
-      {/* Title */}
+      {}
       <div className="text-gray-700 mb-2">
         <span className="font-semibold text-sm">Flight Safety Index</span>
       </div>
 
-      {/* Gauge Container */}
+      {}
       <div className="flex items-center justify-center w-full h-full relative mt-16">
         <PieChart width={chartWidth} height={chartHeight}>
           <Pie
@@ -54,7 +52,7 @@ const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
             cornerRadius={10}
             paddingAngle={4}
           >
-            {/* Center label displays the flightIndex value */}
+            {}
             <Label
               value={flightIndex.toString()}
               position="center"
@@ -62,8 +60,8 @@ const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
               style={{ fontSize: "42px", fontWeight: "bold" }}
             />
           </Pie>
-          
-          {/* Add the decorative dots */}
+
+          {}
           <svg>
             {dotPositions.map((dot, index) => (
               <circle
@@ -82,7 +80,6 @@ const FlightIndexGauge: React.FC<FlightIndexGaugeProps> = ({ flightIndex }) => {
   );
 };
 
-// Helper function to generate dot positions around the gauge
 const generateDotPositions = (
   centerX: number,
   centerY: number,

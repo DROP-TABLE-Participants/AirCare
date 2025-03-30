@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
-import PartListItemIcon from './PartListItemIcon';  // Import the icon component
+import PartListItemIcon from './PartListItemIcon';  
 
-/**
- * We can map each status to specific Tailwind color classes.
- * Adjust as needed for your design/theme.
- */
 const statusColorMap: { [key: string]: string } = {
   Good: 'bg-green-100 text-green-800',
   'Likely To Fail': 'bg-yellow-100 text-yellow-800',
@@ -19,20 +15,19 @@ interface PartsRiskListItemProps {
 }
 
 const PartsRiskListItem: React.FC<PartsRiskListItemProps> = ({ name, status, reason }) => {
-  // State to track if the reason tooltip is visible
+
   const [showReason, setShowReason] = useState(false);
-  
-  // Determine color classes for the status badge:
+
   const colorClasses = statusColorMap[status] || 'bg-gray-100 text-gray-800';
 
   return (
     <li className="flex items-center justify-between px-[0rem] py-[0.6875rem] border-b-[0.85] border-[#C3CBDC] relative">
       <div className="flex items-center space-x-2">
-        {/* Display the icon for the part */}
+        {}
         <PartListItemIcon partName={name} />
         <span className="text-gray-700 font-medium">{name}</span>
-        
-        {/* Info icon for reason tooltip if reason is available */}
+
+        {}
         {reason && (
           <button 
             className="ml-1 text-gray-400 hover:text-gray-600 focus:outline-none"
@@ -46,8 +41,8 @@ const PartsRiskListItem: React.FC<PartsRiskListItemProps> = ({ name, status, rea
             </svg>
           </button>
         )}
-        
-        {/* Tooltip for reason */}
+
+        {}
         {showReason && reason && (
           <div className="absolute left-0 bottom-full mb-2 p-2 bg-white shadow-lg rounded z-10 w-64 text-sm text-gray-700 border border-gray-200">
             {reason}

@@ -5,7 +5,6 @@ import Map from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Marker, Source, Layer } from 'react-map-gl/mapbox';
 
-// Your Mapbox access token here
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiYm5zYXZvdiIsImEiOiJjbTh1OXpoMmkwbDAxMmtwZXd3NmJudnJ3In0.fgJhJlS6iYaQmdWvoOhYiw';
 
 interface MapWidgetProps {
@@ -43,15 +42,16 @@ const MapWidget: React.FC<MapWidgetProps> = ({
     });
   }, [start, end]);
 
-  const geojson = {
-    type: 'FeatureCollection',
+  const geojson: GeoJSON.FeatureCollection<GeoJSON.Geometry> = {
+    type: "FeatureCollection",
     features: [
       {
-        type: 'Feature',
+        type: "Feature",
         geometry: {
-          type: 'LineString',
+          type: "LineString",
           coordinates: [start, end],
         },
+        properties: {},
       },
     ],
   };
@@ -79,7 +79,6 @@ const MapWidget: React.FC<MapWidgetProps> = ({
           <div className="text-xl text-green-600" title={endName}>🛬</div>
         </Marker>
 
-        {/* Flight Path */}
         <Source id="flight-path" type="geojson" data={geojson}>
           <Layer
             id="flight-path-line"

@@ -30,7 +30,7 @@ const InlineSVG: React.FC<InlineSVGProps> = ({
 
   useEffect(() => {
     if (originalSVG) {
-      // Replace any existing fill attributes with the desired fill value.
+
       const modified = originalSVG.replace(/fill="[^"]*"/g, `fill="${fill}"`);
       setSVGContent(modified);
     }
@@ -59,13 +59,12 @@ interface PlaneProps {
   height?: number | string;
   alt?: string;
   onClickPart?: (partName: string) => void;
-  // List of part names that should be rendered as problematic (e.g. red fill/stroke)
+
   problemParts?: string[];
-  // Optional custom parts configuration; if omitted, the defaultParts array is used.
+
   parts?: PlanePart[];
 }
 
-// Define scaling factor for mobile screens
 const getResponsiveScale = (): number => {
   if (typeof window !== 'undefined') {
     return window.innerWidth < 640 ? 0.7 : 1;
@@ -130,13 +129,12 @@ const Plane: React.FC<PlaneProps> = ({
   className = "",
   width = "100%",
   height = "auto",
-  alt = "Airplane illustration",
   onClickPart = () => {},
-  // Default problematic parts for illustration.
+
   problemParts = ["leftWing", "rightWing", "backLeftWing", "backRightWing"],
   parts,
 }) => {
-  const [hoveredPart, setHoveredPart] = useState<string | null>(null);
+  const [, setHoveredPart] = useState<string | null>(null);
   const [hint, setHint] = useState<string>("");
   const [clickedPoint, setClickedPoint] = useState<{ x: number; y: number } | null>(null);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
@@ -144,19 +142,17 @@ const Plane: React.FC<PlaneProps> = ({
   const popupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Update scale factor based on screen size
   useEffect(() => {
     const updateScale = () => {
       setScale(getResponsiveScale());
     };
-    
+
     updateScale();
-    
+
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-  // Default problem descriptions for some parts.
   const problemDescriptions: { [key: string]: string } = {
     leftWing: "Left Wing: Structural damage detected.",
     rightWing: "Right Wing: Engine malfunction reported.",
@@ -182,8 +178,7 @@ const Plane: React.FC<PlaneProps> = ({
     return hasProblem ? "#FF0200" : "#AEB5D7";
   };
 
-  const getStyle = (baseStyles: React.CSSProperties, partName: string): React.CSSProperties => {
-    const isHovered = hoveredPart === partName;
+  const getStyle = (baseStyles: React.CSSProperties): React.CSSProperties => {
     return {
       ...baseStyles,
       cursor: "pointer",
@@ -202,7 +197,7 @@ const Plane: React.FC<PlaneProps> = ({
       if (containerRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
         const targetRect = e.currentTarget.getBoundingClientRect();
-        // Position the hint just to the right of the clicked element.
+
         const x = targetRect.right - containerRect.left + (10 * scale);
         const y = targetRect.top - containerRect.top;
         setClickedPoint({ x, y });
@@ -241,7 +236,7 @@ const Plane: React.FC<PlaneProps> = ({
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          // marginTop: "200px",
+
           transform: `scale(${scale})`.trim(),
         }}
       >
@@ -257,7 +252,7 @@ const Plane: React.FC<PlaneProps> = ({
               src={part.svg}
               fill={getFillColor(part.name)}
               style={{
-                ...getStyle(part.style, part.name),
+                ...getStyle(part.style),
                 stroke: getStrokeColor(part.name),
                 strokeWidth: "1px",
               }}

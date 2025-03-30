@@ -10,7 +10,6 @@ interface SensorDataModalProps {
   onSave: (updatedData: SensorData) => void;
 }
 
-// Define the min-max ranges for each sensor based on the C# model
 const sensorRanges = {
   oilPressure: { min: 0, max: 500 },
   oilTemperature: { min: -40, max: 150 },
@@ -23,19 +22,6 @@ const sensorRanges = {
   outsideAirTemperature: { min: -50, max: 50 }
 };
 
-// Sample realistic sensor data with normalized values
-const generateSampleSensorData = (): SensorData => ({
-  oilPressure: 375, // psi (0-500 range)
-  oilTemperature: 95, // °C (-40-150 range)
-  cylinderHeadTemperature: 210, // °C (-40-300 range)
-  engineVibration: 42, // units (0-100 range)
-  fuelFlowRate: 4250, // kg/hour (0-10000 range)
-  engineRPM: 22500, // RPM (0-30000 range)
-  hydraulicPressure: 3200, // psi (0-5000 range)
-  cabinPressureDifferential: 7.8, // psi (0-50 range)
-  outsideAirTemperature: -15 // °C (-50-50 range)
-});
-
 const SensorDataModal: React.FC<SensorDataModalProps> = ({ 
   isOpen, 
   onClose, 
@@ -43,11 +29,10 @@ const SensorDataModal: React.FC<SensorDataModalProps> = ({
   aircraftName,
   onSave
 }) => {
-  // Create local state for the editable sensor data
+
   const [editedData, setEditedData] = useState<SensorData>({ ...initialSensorData });
   const [isEditing, setIsEditing] = useState(false);
 
-  // Update local state when props change
   useEffect(() => {
     if (isOpen) {
       setEditedData({ ...initialSensorData });
@@ -60,7 +45,6 @@ const SensorDataModal: React.FC<SensorDataModalProps> = ({
     return `${value.toLocaleString()} ${unit}`;
   };
 
-  // Define units for each sensor
   const sensorUnits = {
     oilPressure: 'psi',
     oilTemperature: '°C',
@@ -73,7 +57,6 @@ const SensorDataModal: React.FC<SensorDataModalProps> = ({
     outsideAirTemperature: '°C'
   };
 
-  // Define display names for each sensor
   const sensorDisplayNames = {
     oilPressure: 'Oil Pressure',
     oilTemperature: 'Oil Temperature',
@@ -86,24 +69,22 @@ const SensorDataModal: React.FC<SensorDataModalProps> = ({
     outsideAirTemperature: 'Outside Air Temperature'
   };
 
-  // Function to handle input changes
   const handleInputChange = (key: keyof SensorData, value: string) => {
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return;
-    
+
     const range = sensorRanges[key];
     const clampedValue = Math.min(Math.max(numValue, range.min), range.max);
-    
+
     setEditedData(prev => ({
       ...prev,
       [key]: clampedValue
     }));
   };
 
-  // Calculate status based on data ranges
   const getStatusForSensor = (key: keyof SensorData): 'normal' | 'warning' | 'critical' => {
     const value = isEditing ? editedData[key] : initialSensorData[key];
-    
+
     switch(key) {
       case 'oilPressure':
         return value > 420 || value < 250 ? 'warning' : 'normal';
@@ -120,7 +101,6 @@ const SensorDataModal: React.FC<SensorDataModalProps> = ({
     }
   };
 
-  // Get color class based on status
   const getColorClass = (status: 'normal' | 'warning' | 'critical'): string => {
     switch(status) {
       case 'warning':
@@ -132,17 +112,15 @@ const SensorDataModal: React.FC<SensorDataModalProps> = ({
     }
   };
 
-  // Save changes and close modal
   const handleSave = () => {
     onClose();
     onSave(editedData);
   };
 
-  // Toggle edit mode
   const toggleEditMode = () => {
     setIsEditing(prev => !prev);
     if (!isEditing) {
-      // When entering edit mode, ensure we have the latest data
+
       setEditedData({ ...initialSensorData });
     }
   };
@@ -193,14 +171,14 @@ const SensorDataModal: React.FC<SensorDataModalProps> = ({
               ? "Edit sensor values to simulate different conditions. Values will be validated against acceptable ranges."
               : "Live sensor readings for this aircraft. These values are used for predictive maintenance and risk analysis."}
           </p>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {(Object.keys(initialSensorData) as Array<keyof SensorData>).map((key) => {
               const status = getStatusForSensor(key);
               const colorClass = getColorClass(status);
               const currentValue = isEditing ? editedData[key] : initialSensorData[key];
               const range = sensorRanges[key];
-              
+
               return (
                 <div key={key} className="border rounded-lg overflow-hidden">
                   <div className="px-4 py-2 bg-gray-50 border-b flex justify-between items-center">
@@ -241,8 +219,8 @@ const SensorDataModal: React.FC<SensorDataModalProps> = ({
                             {formatValue(currentValue, sensorUnits[key])}
                           </span>
                         </div>
-                        
-                        {/* Progress bar visualization */}
+
+                        {}
                         <div className="w-24 h-2 bg-gray-200 rounded-full">
                           <div 
                             className={`h-full rounded-full ${
@@ -262,7 +240,7 @@ const SensorDataModal: React.FC<SensorDataModalProps> = ({
             })}
           </div>
         </div>
-        
+
         <div className="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
           <button 
             onClick={onClose}

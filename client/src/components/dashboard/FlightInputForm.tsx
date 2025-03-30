@@ -1,4 +1,3 @@
-// components/PlaneModal.tsx
 "use client";
 
 import React, { useState, ChangeEvent, FormEvent } from 'react';
@@ -27,7 +26,6 @@ export interface PlaneData {
   sensorsData: SensorsData;
 }
 
-// Default values from your provided JSON
 const defaultPlaneData: PlaneData = {
   aircraftModel: "string",
   origin: "stri",
@@ -63,17 +61,14 @@ export default function PlaneModal({ isOpen, onClose, onSubmit }: PlaneModalProp
 
   if (!isOpen) return null;
 
-  // Handle changes for top-level select
   const handlePlaneSelect = (e: ChangeEvent<HTMLSelectElement>) => {
     setSelectedPlane(e.target.value);
     setPlaneData((prev) => ({ ...prev, aircraftModel: e.target.value }));
   };
 
-  // Handle changes for advanced fields
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
-    // Check if the field is inside sensorsData (assumed to have a "sensor_" prefix)
     if (name.startsWith("sensor_")) {
       const sensorKey = name.replace("sensor_", "") as keyof SensorsData;
       setPlaneData((prev) => ({
@@ -84,7 +79,7 @@ export default function PlaneModal({ isOpen, onClose, onSubmit }: PlaneModalProp
         },
       }));
     } else if (["flightCycles", "flightHours", "payloadWeight"].includes(name)) {
-      // Convert numeric fields
+
       setPlaneData((prev) => ({
         ...prev,
         [name]: Number(value),
@@ -97,7 +92,6 @@ export default function PlaneModal({ isOpen, onClose, onSubmit }: PlaneModalProp
     }
   };
 
-  // Handle form submission
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSubmit(planeData);
@@ -113,7 +107,7 @@ export default function PlaneModal({ isOpen, onClose, onSubmit }: PlaneModalProp
           &times;
         </button>
         <h2 className="text-2xl font-bold mb-4">Enter Plane Information</h2>
-        {/* Select Plane */}
+        {}
         <div className="mb-4">
           <label htmlFor="plane-select" className="block text-sm font-medium text-gray-700 mb-1">
             Select Plane:
@@ -128,11 +122,11 @@ export default function PlaneModal({ isOpen, onClose, onSubmit }: PlaneModalProp
             <option value="Boeing 737">Boeing 737</option>
             <option value="Airbus A320">Airbus A320</option>
             <option value="Embraer E190">Embraer E190</option>
-            {/* Add more options as needed */}
+            {}
           </select>
         </div>
 
-        {/* Advanced Toggle */}
+        {}
         <div className="mb-4">
           <button
             type="button"

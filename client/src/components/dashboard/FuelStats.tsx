@@ -8,7 +8,6 @@ import {
   Area,
   ResponsiveContainer,
 } from "recharts";
-import { FireIcon } from "@heroicons/react/24/solid";
 import { RulForecastVM } from "@/api/models/rulData";
 
 interface DataPoint {
@@ -46,7 +45,9 @@ const defaultStats: AirplaneStats = {
 };
 
 export default function FuelStats({ airplane, rulForecastData }: FuelStatsProps) {
-  // If no airplane stats provided, show a fallback message.
+
+  const [activeTab, setActiveTab] = useState<"fuel" | "engine">("fuel");
+
   if (!airplane && !rulForecastData?.length) {
     return (
       <div className="p-6 w-full border-[0.854px] border-solid border-[#C3CBDC]">
@@ -57,48 +58,40 @@ export default function FuelStats({ airplane, rulForecastData }: FuelStatsProps)
     );
   }
 
-  const [activeTab, setActiveTab] = useState<"fuel" | "engine">("fuel");
-  
-  // Process RUL Forecast data if available
   let engineHealthData = airplane?.engineHealth || defaultStats.engineHealth;
   let fuelEfficiencyData = airplane?.fuelEfficiency || defaultStats.fuelEfficiency;
   let currentEngineHealth: number | undefined;
   let currentFuelEfficiency: number | undefined;
 
   if (rulForecastData && rulForecastData.length > 0) {
-    // Get the latest engine health from API response
+
     currentEngineHealth = Math.round(rulForecastData[0].engineHealthPercentage * 100);
-    
-    // Calculate fuel efficiency as engineHealth - 17
+
     currentFuelEfficiency = Math.max(0, currentEngineHealth - 17);
-    
-    // Generate chart data for engine health from API
-    engineHealthData = rulForecastData.map((forecast, index) => ({
+
+    engineHealthData = rulForecastData.map((forecast) => ({
       name: formatDate(forecast.date),
       value: Math.round(forecast.engineHealthPercentage * 100)
-    })).reverse(); // Reverse to show latest data on the right
-    
-    // Generate chart data for fuel efficiency based on engine health
-    fuelEfficiencyData = rulForecastData.map((forecast, index) => ({
+    })).reverse(); 
+
+    fuelEfficiencyData = rulForecastData.map((forecast) => ({
       name: formatDate(forecast.date),
       value: Math.max(0, Math.round(forecast.engineHealthPercentage * 100) - 17)
-    })).reverse(); // Reverse to show latest data on the right
+    })).reverse(); 
   }
 
   const data = activeTab === "fuel" ? fuelEfficiencyData : engineHealthData;
-  
-  // Use the latest value from the calculated data or from the airplane data
+
   const bigValue = activeTab === "fuel" 
     ? (currentFuelEfficiency !== undefined ? currentFuelEfficiency : data[data.length - 1]?.value || 0)
     : (currentEngineHealth !== undefined ? currentEngineHealth : data[data.length - 1]?.value || 0);
-  
+
   const subtitle = activeTab === "fuel" ? "Fuel Efficiency" : "Engine Health";
 
   return (
     <div className="p-6 w-full border-[0.854px] border-solid border-[#C3CBDC]">
-      {/* Title & Icon */}
 
-      {/* Tabs */}
+      {}
       <div className="mb-4 flex space-x-4">
         <button
           onClick={() => setActiveTab("fuel")}
@@ -118,9 +111,9 @@ export default function FuelStats({ airplane, rulForecastData }: FuelStatsProps)
         </button>
       </div>
 
-      {/* Content: Big number + chart */}
+      {}
       <div className="flex flex-col sm:flex-row items-center sm:items-start mt-8">
-        {/* Left side: Big number & subtitle */}
+        {}
         <div className="mb-4 sm:mb-0 sm:mr-8">
           <h2 className="text-5xl font-bold leading-tight">{bigValue}%</h2>
           <p className="text-lg text-gray-500">{subtitle}</p>
@@ -133,7 +126,7 @@ export default function FuelStats({ airplane, rulForecastData }: FuelStatsProps)
           )}
         </div>
 
-        {/* Right side: Chart */}
+        {}
         <div className="h-40 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
@@ -161,7 +154,6 @@ export default function FuelStats({ airplane, rulForecastData }: FuelStatsProps)
   );
 }
 
-// Helper function to format ISO date string to readable format
 function formatDate(isoString: string): string {
   try {
     const date = new Date(isoString);

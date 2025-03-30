@@ -6,7 +6,6 @@ export default function AircraftSelector() {
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedAircraft(e.target.value);
-    // Could also fetch new data for the selected aircraft, etc.
   };
 
   return (
